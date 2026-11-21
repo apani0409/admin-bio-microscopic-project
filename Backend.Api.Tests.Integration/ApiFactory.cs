@@ -13,6 +13,8 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
     public const string ReaderEmail = "lector@test.local";
     public static readonly string TestPassword = $"T3st{Guid.NewGuid():N}";
 
+    public readonly string StoragePath = Path.Combine(Path.GetTempPath(), $"biomicroscope-it-{Guid.NewGuid():N}");
+
     private readonly PostgreSqlContainer _database = new PostgreSqlBuilder()
         .WithImage("postgres:17")
         .Build();
@@ -30,6 +32,7 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         builder.UseEnvironment("Testing");
         builder.UseSetting("ConnectionStrings:DefaultConnection", _database.GetConnectionString());
         builder.UseSetting("DisableHttpsRedirect", "true");
+        builder.UseSetting("Storage:Path", StoragePath);
         builder.UseSetting("Auth:AdminEmail", AdminEmail);
         builder.UseSetting("Auth:AdminPassword", TestPassword);
         builder.UseSetting("Auth:ReaderEmail", ReaderEmail);

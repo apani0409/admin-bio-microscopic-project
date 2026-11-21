@@ -27,7 +27,14 @@ public static class DependencyInjection
         services.AddScoped<ISlideRepository, EfSlideRepository>();
         services.AddScoped<IImageRepository, EfImageRepository>();
 
-        services.AddSingleton<IFileStorageService, LocalFileStorageService>();
+        services.AddSingleton<IFileStorageService>(_ =>
+        {
+            var storagePath = configuration["Storage:Path"];
+            return new LocalFileStorageService(string.IsNullOrWhiteSpace(storagePath)
+                ? Path.Combine(Directory.GetCurrentDirectory(), "App_Data", "images")
+                : storagePath);
+        });
+        services.AddScoped<IImageFileLookup, EfImageFileLookup>();
         return services;
     }
 }

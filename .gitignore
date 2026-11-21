@@ -491,3 +491,6 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# Imagenes privadas en desarrollo
+App_Data/

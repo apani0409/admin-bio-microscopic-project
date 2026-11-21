@@ -1,0 +1,87 @@
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">@Current.FileName</MudText>
+        <MudText Typo="Typo.caption">Vista @(_index + 1) de @Images.Count</MudText>
+    </TitleContent>
+    <DialogContent>
+        <div tabindex="0" @ref="_viewer" @onkeydown="OnKeyDown" style="outline: none;">
+            <MudStack Row="true" Justify="Justify.Center" AlignItems="AlignItems.Center" Spacing="1" Class="mb-2">
+                <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft" aria-label="Vista anterior"
+                               Disabled="@(Images.Count < 2)" OnClick="Previous" />
+                <MudIconButton Icon="@Icons.Material.Filled.ZoomOut" aria-label="Alejar"
+                               Disabled="@(_zoom <= MinZoom)" OnClick="@(() => SetZoom(_zoom - ZoomStep))" />
+                <MudButton Size="Size.Small" OnClick="@(() => SetZoom(MinZoom))">@_zoom%</MudButton>
+                <MudIconButton Icon="@Icons.Material.Filled.ZoomIn" aria-label="Acercar"
+                               Disabled="@(_zoom >= MaxZoom)" OnClick="@(() => SetZoom(_zoom + ZoomStep))" />
+                <MudIconButton Icon="@Icons.Material.Filled.ChevronRight" aria-label="Vista siguiente"
+                               Disabled="@(Images.Count < 2)" OnClick="Next" />
+            </MudStack>
+
+            <div style="height: 65vh; overflow: auto; background: #111; display: flex; border-radius: 4px;">
+                <img src="@ImageUrls.File(Current.Id)" alt="@Current.FileName" draggable="false" style="@ImageStyle" />
+            </div>
+
+            @if (Images.Count > 1)
+            {
+                <div class="d-flex justify-center flex-wrap gap-2 mt-3">
+                    @for (var i = 0; i < Images.Count; i++)
+                    {
+                        var index = i;
+                        <button type="button" aria-label="@($"Ver vista {index + 1}")" aria-current="@(index == _index ? "true" : null)"
+                                @onclick="@(() => Select(index))"
+                                style="@ThumbnailStyle(index)">
+                            <img src="@ImageUrls.Thumbnail(Images[index].Id)" alt="" loading="lazy" draggable="false"
+                                 style="width: 100%; height: 100%; object-fit: cover; display: block;" />
+                        </button>
+                    }
+                </div>
+            }
+        </div>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    private const int MinZoom = 100;
+    private const int MaxZoom = 400;
+    private const int ZoomStep = 50;
+
+    [Parameter, EditorRequired] public IReadOnlyList<ImageDto> Images { get; set; } = [];
+    [Parameter] public int StartIndex { get; set; }
+
+    private ElementReference _viewer;
+    private int _index;
+    private int _zoom = MinZoom;
+
+    private ImageDto Current => Images[_index];
+
+    private string ImageStyle => _zoom == MinZoom
+        ? "margin: auto; max-width: 100%; max-height: 100%; object-fit: contain;"
+        : $"margin: auto; width: {_zoom}%; max-width: none; height: auto;";
+
+    protected override void OnParametersSet() => _index = Math.Clamp(StartIndex, 0, Images.Count - 1);
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender) await _viewer.FocusAsync();
+    }
+
+    private string ThumbnailStyle(int index) =>
+        $"width: 64px; height: 64px; padding: 0; cursor: pointer; overflow: hidden; border-radius: 4px; " +
+        $"border: 2px solid {(index == _index ? "var(--mud-palette-primary)" : "transparent")};";
+
+    private void Select(int index)
+    {
+        _index = index;
+        _zoom = MinZoom;
+    }
+
+    private void Previous() => Select((_index - 1 + Images.Count) % Images.Count);
+    private void Next() => Select((_index + 1) % Images.Count);
+    private void SetZoom(int zoom) => _zoom = Math.Clamp(zoom, MinZoom, MaxZoom);
+
+    private void OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "ArrowLeft" && Images.Count > 1) Previous();
+        if (e.Key == "ArrowRight" && Images.Count > 1) Next();
+    }
+}
