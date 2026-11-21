@@ -21,6 +21,8 @@ public static class DependencyInjection
             .AddHttpMessageHandler<ApiRequestHandler>();
         services.AddHttpClient<IAuthService, AuthService>(c => c.BaseAddress = new Uri(apiBaseUrl))
             .AddHttpMessageHandler<ApiRequestHandler>();
+        services.AddHttpClient<IUserService, UserService>(c => c.BaseAddress = new Uri(apiBaseUrl))
+            .AddHttpMessageHandler<ApiRequestHandler>();
 
         services.AddScoped<IGroupRepository, GroupRepository>();
         services.AddScoped<IBoxRepository, BoxRepository>();

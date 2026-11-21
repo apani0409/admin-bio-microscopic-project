@@ -31,6 +31,7 @@ public static class DependencyInjection
         var api = builder.MapGroup("/api");
         api.AddEndpointFilter<CsrfHeaderFilter>();
         api.MapAuthEndpoints();
+        api.MapUserEndpoints();
 
         var content = api.MapGroup(string.Empty);
         content.RequireAuthorization(AuthPolicies.Reader);
