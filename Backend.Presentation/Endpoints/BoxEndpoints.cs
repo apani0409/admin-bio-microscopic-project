@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using UCR.EB.BioMicroscopeAdmin.Backend.Presentation.Handlers.Boxes;
 
@@ -14,7 +15,8 @@ public static class BoxEndpoints
         builder.MapGet("/boxes/{id}", GetBoxHandler.HandleAsync);
         builder.MapGet("/groups/{id}/boxes", ListBoxesByGroupHandler.HandleAsync);
         builder.MapPut("/boxes/{id}", UpdateBoxHandler.HandleAsync);
-        builder.MapDelete("/boxes/{id}", DeleteBoxHandler.HandleAsync);
+        builder.MapDelete("/boxes/{id}", DeleteBoxHandler.HandleAsync)
+            .AddEndpointFilter(new Security.DeleteImageFilesFilter(Application.Services.ImageOwner.Box));
         return builder;
     }
 }

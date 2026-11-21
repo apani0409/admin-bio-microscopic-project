@@ -29,6 +29,16 @@ internal sealed class EfImageRepository(AppDbContext context) : IImageRepository
         // Load a tracked instance and apply only Order (the sole mutable field).
         var tracked = await context.Images.FindAsync(image.Id)
             ?? throw new NotFoundException($"Image {image.Id} not found.");
+
+        // Si la posición ya está ocupada, las dos imágenes se intercambian en la misma transacción.
+        var previousOrder = tracked.Order;
+        var occupant = await context.Images.FirstOrDefaultAsync(i =>
+            i.SlideId == tracked.SlideId && i.Id != tracked.Id && i.Order == image.Order);
+        if (occupant is not null)
+        {
+            occupant.Order = previousOrder;
+        }
+
         tracked.Order = image.Order;
         await context.SaveChangesAsync();
         return tracked;

@@ -88,7 +88,9 @@ else
             </ChildContent>
             <ItemRenderer>
                 <MudCard Style="width: 250px; cursor: grab;">
-                    <MudCardMedia Image="@ResolveImageUrl(context.FileUrl)" Height="200" />
+                    <img src="@ImageUrls.Thumbnail(context.Id)" alt="@context.FileName" loading="lazy" draggable="false"
+                         style="width: 100%; height: 200px; object-fit: cover; cursor: zoom-in; display: block;"
+                         @onclick="@(() => OpenViewer(context))" />
                     <MudCardContent>
                         <MudText Typo="Typo.body2">@context.FileName</MudText>
                         <MudChip T="string" Size="Size.Small" Color="Color.Primary">Orden: @context.Order</MudChip>
@@ -107,7 +109,11 @@ else
             @foreach (var image in _images)
             {
                 <MudCard Style="width: 250px;">
-                    <MudCardMedia Image="@ResolveImageUrl(image.FileUrl)" Height="200" />
+                    <button type="button" aria-label="@($"Abrir {image.FileName}")" @onclick="@(() => OpenViewer(image))"
+                            style="width: 100%; padding: 0; border: 0; cursor: zoom-in; display: block;">
+                        <img src="@ImageUrls.Thumbnail(image.Id)" alt="@image.FileName" loading="lazy" draggable="false"
+                             style="width: 100%; height: 200px; object-fit: cover; display: block;" />
+                    </button>
                     <MudCardContent>
                         <MudText Typo="Typo.body2">@image.FileName</MudText>
                     </MudCardContent>
@@ -132,16 +138,15 @@ else
     private List<ImageDto> _images = [];
     private MudDropContainer<ImageDto>? _dropContainer;
 
-    private string ResolveImageUrl(string fileUrl)
+    private async Task OpenViewer(ImageDto image)
     {
-        // On Unix runtimes (incl. WASM) "/uploads/x.png" parses as an absolute file:// URI,
-        // so only treat real web URLs as already-absolute.
-        if (Uri.TryCreate(fileUrl, UriKind.Absolute, out var uri) &&
-            (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps))
+        var parameters = new DialogParameters<ImageViewerDialog>
         {
-            return fileUrl;
-        }
-        return string.Join('/', fileUrl.Split('/').Select(Uri.EscapeDataString));
+            { x => x.Images, _images },
+            { x => x.StartIndex, _images.FindIndex(i => i.Id == image.Id) }
+        };
+        var options = new DialogOptions { MaxWidth = MaxWidth.ExtraLarge, FullWidth = true, CloseButton = true, CloseOnEscapeKey = true };
+        await DialogService.ShowAsync<ImageViewerDialog>(image.FileName, parameters, options);
     }
 
     protected override async Task OnInitializedAsync()

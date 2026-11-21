@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using UCR.EB.BioMicroscopeAdmin.Backend.Presentation.Handlers.Groups;
 
@@ -13,7 +14,8 @@ public static class GroupEndpoints
         builder.MapGet("/groups", ListGroupsHandler.HandleAsync);
         builder.MapGet("/groups/{id}", GetGroupHandler.HandleAsync);
         builder.MapPut("/groups/{id}", UpdateGroupHandler.HandleAsync);
-        builder.MapDelete("/groups/{id}", DeleteGroupHandler.HandleAsync);
+        builder.MapDelete("/groups/{id}", DeleteGroupHandler.HandleAsync)
+            .AddEndpointFilter(new Security.DeleteImageFilesFilter(Application.Services.ImageOwner.Group));
         return builder;
     }
 }
