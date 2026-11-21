@@ -37,7 +37,7 @@ Ambigüedades abiertas (confirmar con las personas patrocinadoras antes de cerra
 
 ## Stack y mapa del repo
 
-.NET 9, Clean Architecture, EF Core + PostgreSQL 17, Blazor WASM + MudBlazor, cliente HTTP escrito a mano (`BioMicroscopeApiClient`), shell de escritorio con Electron (heredado, no es parte del Acta).
+.NET 9, Clean Architecture, EF Core + PostgreSQL 17, Blazor WASM + MudBlazor, cliente HTTP escrito a mano (`BioMicroscopeApiClient`).
 
 - `Backend.Domain` · `Backend.Application` · `Backend.Infrastructure` · `Backend.Presentation` (endpoints minimal API en `Endpoints/`) · `Backend.DependencyInjection` · `Backend.Api` (host).
 - `Frontend` (host WASM) · `Frontend.Domain` · `Frontend.Application` · `Frontend.Infrastructure` (cliente HTTP en `ApiClient/`) · `Frontend.Presentation` (páginas MudBlazor) · `Frontend.DependencyInjection`.
