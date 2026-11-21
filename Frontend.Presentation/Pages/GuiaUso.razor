@@ -9,7 +9,22 @@
 </MudText>
 
 <MudExpansionPanels MultiExpansion="true" Elevation="1">
-    <MudExpansionPanel Text="1. Crear una lámina nueva" Expanded="true">
+    <MudExpansionPanel Text="Consultar la colección" Expanded="true">
+        <MudText Typo="Typo.body1" Class="mb-2">
+            Toda persona necesita iniciar sesión. El rol <strong>Lector</strong> puede navegar por grupos y cajas,
+            buscar láminas por código o nombre, y abrir sus imágenes.
+        </MudText>
+        <MudList T="string">
+            <MudListItem Icon="@Icons.Material.Filled.ZoomIn">
+                En el detalle de una lámina, haga clic en una imagen para abrir el visor y usar el zoom.
+            </MudListItem>
+            <MudListItem Icon="@Icons.Material.Filled.ChevronRight">
+                Use las flechas del visor o del teclado para pasar entre las vistas de la lámina.
+            </MudListItem>
+        </MudList>
+    </MudExpansionPanel>
+
+    <MudExpansionPanel Text="1. Crear una lámina nueva (Administrador)">
         <MudText Typo="Typo.body1" Class="mb-2">
             Todo empieza en la sección <strong>Láminas</strong>, con el botón "Nueva Lámina". El formulario
             se completa en un solo paso:
@@ -37,7 +52,7 @@
         </MudAlert>
     </MudExpansionPanel>
 
-    <MudExpansionPanel Text="2. Administrar Grupos y Cajas">
+    <MudExpansionPanel Text="2. Administrar Grupos y Cajas (Administrador)">
         <MudText Typo="Typo.body1" Class="mb-2">
             Desde las secciones <strong>Grupos</strong> y <strong>Cajas</strong> puede renombrar o eliminar
             los registros existentes. La sección Cajas permite además filtrar por grupo.
@@ -48,7 +63,7 @@
         </MudAlert>
     </MudExpansionPanel>
 
-    <MudExpansionPanel Text="3. Administrar Láminas">
+    <MudExpansionPanel Text="3. Administrar Láminas (Administrador)">
         <MudText Typo="Typo.body1" Class="mb-2">
             La sección <strong>Láminas</strong> lista todas las láminas registradas y permite filtrar por caja.
             Desde ahí puede:
@@ -63,13 +78,13 @@
         </MudList>
     </MudExpansionPanel>
 
-    <MudExpansionPanel Text="4. Administrar las imágenes de una lámina">
+    <MudExpansionPanel Text="4. Administrar las imágenes de una lámina (Administrador)">
         <MudText Typo="Typo.body1" Class="mb-2">
             Desde el detalle de una lámina puede:
         </MudText>
         <MudList T="string">
             <MudListItem Icon="@Icons.Material.Filled.AddPhotoAlternate">
-                Subir una nueva imagen (mientras haya menos de 6), indicando su orden.
+                Subir una nueva imagen JPEG, PNG o WebP (mientras haya menos de 6).
             </MudListItem>
             <MudListItem Icon="@Icons.Material.Filled.DragIndicator">
                 Reordenar las imágenes arrastrándolas a la posición deseada.
@@ -80,11 +95,12 @@
         </MudList>
     </MudExpansionPanel>
 
-    <MudExpansionPanel Text="5. Documentación de la API">
-        <MudText Typo="Typo.body1">
-            Si necesita integrar otro sistema con esta administración, la pestaña
-            <strong>Documentación API</strong> del menú abre la referencia interactiva (Swagger) de todos los
-            endpoints disponibles, en una pestaña nueva del navegador.
+    <MudExpansionPanel Text="5. Administrar usuarios (Administrador)">
+        <MudText Typo="Typo.body1" Class="mb-2">
+            En la sección <strong>Usuarios</strong> puede crear cuentas de Lector, desactivarlas y reactivarlas.
         </MudText>
+        <MudAlert Severity="Severity.Info" Dense="true">
+            Una cuenta desactivada no puede iniciar sesión, y su sesión abierta se cierra en un minuto como máximo.
+        </MudAlert>
     </MudExpansionPanel>
 </MudExpansionPanels>

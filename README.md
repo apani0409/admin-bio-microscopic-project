@@ -29,7 +29,7 @@ dotnet run --project Backend.Api --launch-profile http
 | Salud del API | http://localhost:5138/health |
 | PostgreSQL | `127.0.0.1:5432`, base `biomicroscope_admin` |
 
-El API aplica las migraciones al arrancar. Las credenciales de `appsettings.json` son solo para desarrollo.
+El API aplica las migraciones al arrancar. Las credenciales de `appsettings.Development.json` son solo para desarrollo.
 
 ## Usuarios de desarrollo
 
@@ -82,6 +82,24 @@ dotnet tool restore
 ```powershell
 dotnet ef migrations add <Nombre> --project Backend.Infrastructure --startup-project Backend.Infrastructure --output-dir Persistence/Migrations
 ```
+
+## Despliegue con Docker
+
+Copiar `.env.example` a `.env`, cambiar sus valores y levantar todo:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+```powershell
+docker compose -f docker-compose.prod.yml up -d --build
+```
+
+La aplicación queda en http://localhost:8080. Los datos, las imágenes y las claves de sesión viven en volúmenes de Docker.
+
+Para publicarla en un servidor, ponerla detrás de un proxy con HTTPS y usar `TRUST_PROXY=true`. Sin HTTPS, la contraseña y la cookie de sesión viajan sin cifrar.
+
+La lista para validar contra el Acta está en [docs/ACEPTACION.md](docs/ACEPTACION.md).
 
 ## Estructura
 

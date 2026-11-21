@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using UCR.EB.BioMicroscopeAdmin.Backend.Application.Services;
 using UCR.EB.BioMicroscopeAdmin.Backend.DependencyInjection;
@@ -15,7 +17,31 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddCleanArchitectureServices(builder.Configuration);
 
+// Sin claves persistentes, recrear el contenedor cerraría todas las sesiones.
+if (builder.Configuration["DataProtection:KeysPath"] is { Length: > 0 } keysPath)
+{
+    builder.Services.AddDataProtection()
+        .SetApplicationName("biomicroscope")
+        .PersistKeysToFileSystem(new DirectoryInfo(keysPath));
+}
+
+var trustProxy = builder.Configuration.GetValue<bool>("Proxy:TrustForwardedHeaders");
+if (trustProxy)
+{
+    builder.Services.Configure<ForwardedHeadersOptions>(options =>
+    {
+        options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+        options.KnownNetworks.Clear();
+        options.KnownProxies.Clear();
+    });
+}
+
 var app = builder.Build();
+
+if (trustProxy)
+{
+    app.UseForwardedHeaders();
+}
 
 app.UseGlobalExceptionHandler();
 
@@ -28,10 +54,8 @@ if (app.Environment.IsDevelopment())
     app.UseWebAssemblyDebugging();
 }
 
-// En desarrollo el frontend consume la API por HTTP; redirigir a HTTPS
-// rompe la carga de imágenes en navegadores que no confían en el certificado dev.
-// El empaquetado de escritorio (Electron) también corre todo sobre HTTP local
-// y define DisableHttpsRedirect para evitar el mismo problema sin certificado.
+// En desarrollo se trabaja por HTTP. En contenedor, el HTTPS lo termina el proxy
+// del servidor y DisableHttpsRedirect evita redirigir dentro de la red interna.
 if (!app.Environment.IsDevelopment() && !builder.Configuration.GetValue<bool>("DisableHttpsRedirect"))
 {
     app.UseHttpsRedirection();

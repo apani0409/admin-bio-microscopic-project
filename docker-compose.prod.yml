@@ -1,0 +1,44 @@
+name: biomicroscope-prod
+
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: biomicroscope_admin
+      POSTGRES_USER: biomicroscope
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Definir POSTGRES_PASSWORD en .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U biomicroscope -d biomicroscope_admin"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  app:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__DefaultConnection: Host=db;Database=biomicroscope_admin;Username=biomicroscope;Password=${POSTGRES_PASSWORD}
+      Auth__AdminEmail: ${ADMIN_EMAIL:?Definir ADMIN_EMAIL en .env}
+      Auth__AdminPassword: ${ADMIN_PASSWORD:?Definir ADMIN_PASSWORD en .env}
+      Storage__Path: /data/images
+      Storage__MaxUploadMb: ${MAX_UPLOAD_MB:-10}
+      DataProtection__KeysPath: /data/keys
+      DisableHttpsRedirect: "true"
+      Proxy__TrustForwardedHeaders: ${TRUST_PROXY:-false}
+    ports:
+      - "${APP_BIND:-127.0.0.1}:${APP_PORT:-8080}:8080"
+    volumes:
+      - images:/data/images
+      - keys:/data/keys
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+  images:
+  keys:
