@@ -1,6 +1,5 @@
 @page "/slides/{Id:int}"
 @using System.Linq
-@using Microsoft.Extensions.Configuration
 @inject ISlideService SlideService
 @inject IImageService ImageService
 @inject IBoxService BoxService
@@ -8,7 +7,6 @@
 @inject IDialogService DialogService
 @inject ISnackbar Snackbar
 @inject NavigationManager Nav
-@inject IConfiguration Configuration
 
 <PageTitle>Detalle de Lámina</PageTitle>
 
@@ -30,10 +28,12 @@ else
         <MudCardContent>
             <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween">
                 <MudText Typo="Typo.h5">@_slide.Code - @_slide.Name</MudText>
-                <MudButton Variant="Variant.Outlined" Color="Color.Primary"
-                           StartIcon="@Icons.Material.Filled.Edit" OnClick="EditSlide">
-                    Editar
-                </MudButton>
+                <AdminOnly>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Edit" OnClick="EditSlide">
+                        Editar
+                    </MudButton>
+                </AdminOnly>
             </MudStack>
             <MudStack Row="true" Spacing="2" Class="mt-2">
                 @if (_group is not null)
@@ -59,20 +59,22 @@ else
 
     <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.SpaceBetween" Class="mb-3">
         <MudText Typo="Typo.h6">Imágenes</MudText>
-        <MudTooltip Text="@(_images.Count >= MaxImages ? $"Máximo {MaxImages} imágenes por lámina" : null)">
-            <MudButton Variant="Variant.Filled" Color="Color.Primary"
-                       StartIcon="@Icons.Material.Filled.AddPhotoAlternate" OnClick="UploadImage"
-                       Disabled="@(_images.Count >= MaxImages)">
-                Subir Imagen
-            </MudButton>
-        </MudTooltip>
+        <AdminOnly>
+            <MudTooltip Text="@(_images.Count >= MaxImages ? $"Máximo {MaxImages} imágenes por lámina" : null)">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                           StartIcon="@Icons.Material.Filled.AddPhotoAlternate" OnClick="UploadImage"
+                           Disabled="@(_images.Count >= MaxImages)">
+                    Subir Imagen
+                </MudButton>
+            </MudTooltip>
+        </AdminOnly>
     </MudStack>
 
     @if (_images.Count == 0)
     {
         <MudText>No hay imágenes para esta lámina.</MudText>
     }
-    else
+    else if (_isAdmin)
     {
         <MudText Typo="Typo.body2" Class="mb-2 mud-text-secondary">
             Arrastre las imágenes para cambiar su orden.
@@ -93,16 +95,33 @@ else
                     </MudCardContent>
                     <MudCardActions>
                         <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error"
-                                       OnClick="@(() => DeleteImage(context))" />
+                                       aria-label="Eliminar imagen" OnClick="@(() => DeleteImage(context))" />
                     </MudCardActions>
                 </MudCard>
             </ItemRenderer>
         </MudDropContainer>
     }
+    else
+    {
+        <div class="d-flex flex-wrap gap-4">
+            @foreach (var image in _images)
+            {
+                <MudCard Style="width: 250px;">
+                    <MudCardMedia Image="@ResolveImageUrl(image.FileUrl)" Height="200" />
+                    <MudCardContent>
+                        <MudText Typo="Typo.body2">@image.FileName</MudText>
+                    </MudCardContent>
+                </MudCard>
+            }
+        </div>
+    }
 }
 
 @code {
     [Parameter] public int Id { get; set; }
+    [CascadingParameter] private Task<AuthenticationState>? AuthenticationState { get; set; }
+
+    private bool _isAdmin;
 
     private const int MaxImages = 6;
 
@@ -122,12 +141,18 @@ else
         {
             return fileUrl;
         }
-        var encodedPath = string.Join('/', fileUrl.Split('/').Select(Uri.EscapeDataString));
-        var baseUrl = (Configuration["ApiBaseUrl"] ?? "http://localhost:5138/").TrimEnd('/');
-        return $"{baseUrl}{encodedPath}";
+        return string.Join('/', fileUrl.Split('/').Select(Uri.EscapeDataString));
     }
 
-    protected override Task OnInitializedAsync() => Load();
+    protected override async Task OnInitializedAsync()
+    {
+        if (AuthenticationState is not null)
+        {
+            _isAdmin = (await AuthenticationState).User.IsInRole(AppRoles.Administrator);
+        }
+
+        await Load();
+    }
 
     private async Task Load()
     {

@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Backend.DependencyInjection\UCR.EB.BioMicroscopeAdmin.Backend.DependencyInjection.csproj" />
+    <ProjectReference Include="..\Frontend\UCR.EB.BioMicroscopeAdmin.Frontend.csproj" />
   </ItemGroup>
 
 </Project>

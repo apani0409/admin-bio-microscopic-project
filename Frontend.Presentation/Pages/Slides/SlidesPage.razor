@@ -22,10 +22,12 @@
                 <MudSelectItem T="int?" Value="b.Id">@b.Number - @b.Name</MudSelectItem>
             }
         </MudSelect>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary"
-                   StartIcon="@Icons.Material.Filled.Add" OnClick="OpenCreate">
-            Nueva Lámina
-        </MudButton>
+        <AdminOnly>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Add" OnClick="OpenCreate">
+                Nueva Lámina
+            </MudButton>
+        </AdminOnly>
     </ToolBarContent>
     <HeaderContent>
         <MudTh>Código</MudTh>
@@ -40,8 +42,10 @@
         <MudTd Style="text-align:right">
             <MudIconButton Icon="@Icons.Material.Filled.Visibility" Color="Color.Info" Size="Size.Small"
                            OnClick="@(() => ViewDetail(context))" />
-            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small"
-                           OnClick="@(() => Delete(context))" />
+            <AdminOnly>
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small"
+                               aria-label="Eliminar lámina" OnClick="@(() => Delete(context))" />
+            </AdminOnly>
         </MudTd>
     </RowTemplate>
     <NoRecordsContent>

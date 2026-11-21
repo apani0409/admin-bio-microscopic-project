@@ -9,7 +9,7 @@ builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
 builder.Services.AddMudServices();
-builder.Services.AddFrontendServices(
-    builder.Configuration["ApiBaseUrl"] ?? "http://localhost:5138/");
+// El API hospeda este front: comparten origen y la cookie de sesión viaja sola.
+builder.Services.AddFrontendServices(new Uri(new Uri(builder.HostEnvironment.BaseAddress), "api/").ToString());
 
 await builder.Build().RunAsync();

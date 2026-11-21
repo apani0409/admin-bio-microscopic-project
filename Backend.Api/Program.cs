@@ -16,12 +16,6 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddCleanArchitectureServices(builder.Configuration);
 
-if (builder.Environment.IsDevelopment())
-{
-    builder.Services.AddCors(x => x.AddDefaultPolicy(p =>
-        p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
-}
-
 var app = builder.Build();
 
 app.UseGlobalExceptionHandler();
@@ -32,7 +26,7 @@ if (app.Environment.IsDevelopment())
     // Swagger manda el header anti-CSRF para poder probar las escrituras.
     app.UseSwaggerUI(options => options.UseRequestInterceptor(
         $"(req) => {{ req.headers['{CsrfHeaderFilter.HeaderName}'] = '{CsrfHeaderFilter.HeaderValue}'; return req; }}"));
-    app.UseCors();
+    app.UseWebAssemblyDebugging();
 }
 
 // En desarrollo el frontend consume la API por HTTP; redirigir a HTTPS
@@ -57,9 +51,9 @@ app.MapEndpoints();
 app.MapGet("/health", async (AppDbContext db) =>
     await db.Database.CanConnectAsync() ? Results.Ok("ok") : Results.StatusCode(503));
 
-// El empaquetado de escritorio sirve la SPA de Blazor WASM directamente desde
-// wwwroot; las rutas que no coincidan con la API ni con un archivo estático
-// deben caer en index.html para que el enrutamiento del lado del cliente funcione.
+// Una ruta inexistente del API responde 404; el resto la resuelve el router de Blazor.
+app.MapMethods("/api/{**path}", [HttpMethods.Get, HttpMethods.Head], () => Results.NotFound())
+    .ExcludeFromDescription();
 app.MapFallbackToFile("index.html");
 
 await MigrateDatabaseWithRetryAsync(app);
