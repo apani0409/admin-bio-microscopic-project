@@ -27,14 +27,13 @@ Ambigüedades abiertas (confirmar con las personas patrocinadoras antes de cerra
 
 ## Estado actual del código (verificado)
 
-- Sin autenticación ni roles. Todos los endpoints son públicos.
-- Swagger activo en todos los entornos (`Backend.Api/Program.cs`).
-- Las imágenes se guardan en `wwwroot/uploads` (`LocalFileStorageService`, marcado "solo desarrollo") y se sirven con `UseStaticFiles`, o sea que **cualquiera con la URL ve la imagen**.
-- No hay miniaturas.
-- CORS abierto (`AllowAnyOrigin`) solo en Development.
-- La contraseña de Postgres está en `appsettings.json` (`postgres/postgres`, solo desarrollo).
-- README vacío.
-- El API sirve el front Blazor en el mismo origen (`MapFallbackToFile("index.html")`).
+- Identity con cookie y roles `Administrador` y `Lector`. Todo el API está bajo `/api`; las lecturas exigen sesión y las escrituras, `Administrador`.
+- Las escrituras exigen el header `X-Requested-With: BioMicroscope`.
+- Swagger solo en Development.
+- Las imágenes se guardan en `Storage:Path` y se sirven por `/api/images/{id}/file` y `/thumbnail` con sesión.
+- El API sirve el front Blazor en el mismo origen. No hay CORS.
+- La cadena de conexión de `postgres/postgres` existe solo en `appsettings.Development.json`.
+- Los tests de integración usan Testcontainers y requieren Docker.
 
 ## Stack y mapa del repo
 
@@ -44,28 +43,26 @@ Ambigüedades abiertas (confirmar con las personas patrocinadoras antes de cerra
 - `Frontend` (host WASM) · `Frontend.Domain` · `Frontend.Application` · `Frontend.Infrastructure` (cliente HTTP en `ApiClient/`) · `Frontend.Presentation` (páginas MudBlazor) · `Frontend.DependencyInjection`.
 - Un proyecto `*.Tests.Unit` por capa.
 - Entidades: Group → Box → Slide → Image (la lámina tiene varias imágenes con orden).
-- Páginas: Home, Groups, Boxes, Slides, SlideDetail, GuiaUso.
+- Páginas: Login, Home, Groups, Boxes, Slides, SlideDetail, Users, GuiaUso.
 
 ## Comandos
 
 ```bash
 docker compose up -d                       # Postgres (127.0.0.1:5432, db biomicroscope_admin)
-dotnet run --project Backend.Api           # API en http://localhost:5138 (migra la BD al arrancar)
-dotnet run --project Frontend              # Front en http://localhost:5200
-dotnet test UCR.EB.BioMicroscopeAdmin.sln  # todos los tests
+dotnet run --project Backend.Api --launch-profile http  # App y API en http://localhost:5138
+dotnet test UCR.EB.BioMicroscopeAdmin.sln  # todos los tests (Docker encendido)
+docker compose -f docker-compose.prod.yml up -d --build  # despliegue completo (requiere .env)
 ```
 
-URL del API para el front: `Frontend/wwwroot/appsettings*.json` → `ApiBaseUrl`.
-
-## Decisiones técnicas propuestas
+## Decisiones técnicas
 
 1. **Autenticación por cookie, mismo origen.** ASP.NET Core Identity + roles (`Administrador`, `Lector`). Motivo: un `<img src>` no puede mandar un header `Authorization`, así que JWT bearer rompería la visualización de imágenes protegidas.
 2. **Imágenes fuera de `wwwroot`.** Guardarlas en una carpeta configurable (`Storage:Path`, volumen en Docker) y servirlas por un endpoint con `RequireAuthorization()`. Sin `UseStaticFiles` para ellas.
 3. **Política por defecto = autenticado.** Lecturas: cualquier usuario con sesión. Escrituras (POST/PUT/DELETE): solo `Administrador`.
-4. **Swagger solo en Development.** La pestaña "Documentación API" del front hay que ajustarla o quitarla en producción.
+4. **Swagger solo en Development.** La pestaña "Documentación API" solo aparece en ese entorno.
 5. **Un solo despliegue en contenedor** (API + front estático + volumen de imágenes + Postgres) con `Dockerfile` y `docker-compose.prod.yml`. Es lo que se puede mover al servidor de la Escuela.
 6. **Secretos fuera del repo.** Cadena de conexión y contraseña del admin inicial por variables de entorno.
-7. En desarrollo, el front (5200) y el API (5138) son orígenes distintos: o se sirve el front desde el API, o se configura CORS con origen explícito + `AllowCredentials` y el `HttpClient` con credenciales incluidas. `AllowAnyOrigin` no funciona con cookies.
+7. **Un solo origen también en desarrollo.** El API hospeda el front en el puerto 5138 para que la cookie funcione sin CORS.
 
 ## Reglas de colaboración
 
