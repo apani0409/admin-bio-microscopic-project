@@ -1,0 +1,8 @@
+@* Muestra su contenido solo al Administrador. El API aplica la regla real. *@
+<AuthorizeView Roles="@AppRoles.Administrator" Context="authState">
+    <Authorized>@ChildContent</Authorized>
+</AuthorizeView>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

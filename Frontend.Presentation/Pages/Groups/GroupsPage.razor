@@ -16,17 +16,19 @@
     <HeaderContent>
         <MudTh>Id</MudTh>
         <MudTh>Nombre</MudTh>
-        <MudTh Style="text-align:right">Acciones</MudTh>
+        <AdminOnly><MudTh Style="text-align:right">Acciones</MudTh></AdminOnly>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="Id">@context.Id</MudTd>
         <MudTd DataLabel="Nombre">@context.Name</MudTd>
-        <MudTd Style="text-align:right">
-            <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small"
-                           OnClick="@(() => OpenEdit(context))" />
-            <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small"
-                           OnClick="@(() => Delete(context))" />
-        </MudTd>
+        <AdminOnly>
+            <MudTd Style="text-align:right">
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small"
+                               aria-label="Editar grupo" OnClick="@(() => OpenEdit(context))" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Size="Size.Small"
+                               aria-label="Eliminar grupo" OnClick="@(() => Delete(context))" />
+            </MudTd>
+        </AdminOnly>
     </RowTemplate>
     <NoRecordsContent>
         <MudText>No hay grupos registrados. Cree una lámina para generar grupos.</MudText>

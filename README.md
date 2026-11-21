@@ -11,25 +11,21 @@ Proyecto del curso CI-0139 Administración de Proyectos (UCR/ECCI, II-2026). El 
 
 ## Levantar el proyecto
 
-Desde la raíz del repo, cada comando del API y del front en su propia terminal.
+Desde la raíz del repo. El API también sirve el front, así que comparten origen y solo se levanta un proceso.
 
 ```powershell
 docker compose up -d
 ```
 
 ```powershell
-dotnet run --project Backend.Api
-```
-
-```powershell
-dotnet run --project Frontend
+dotnet run --project Backend.Api --launch-profile http
 ```
 
 | Servicio | Dirección |
 |---|---|
-| Front | http://localhost:5200 |
-| API | http://localhost:5138 |
-| Swagger | http://localhost:5138/swagger |
+| Aplicación | http://localhost:5138 |
+| API | http://localhost:5138/api |
+| Swagger (solo Development) | http://localhost:5138/swagger |
 | Salud del API | http://localhost:5138/health |
 | PostgreSQL | `127.0.0.1:5432`, base `biomicroscope_admin` |
 

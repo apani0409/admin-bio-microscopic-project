@@ -1,0 +1,14 @@
+@inherits LayoutComponentBase
+@using UCR.EB.BioMicroscopeAdmin.Frontend.Presentation.Theme
+
+<MudThemeProvider Theme="@UcrTheme.Theme" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+<MudLayout>
+    <MudMainContent Class="pt-0">
+        <MudContainer MaxWidth="MaxWidth.ExtraSmall" Class="d-flex align-center justify-center" Style="min-height: 100vh;">
+            @Body
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>

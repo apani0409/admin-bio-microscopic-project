@@ -1,5 +1,7 @@
 @using System.Net.Http
 @using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.Components.Web
 @using Microsoft.AspNetCore.Components.Routing
@@ -10,4 +12,7 @@
 @using UCR.EB.BioMicroscopeAdmin.Frontend.Application.Dtos.Slides
 @using UCR.EB.BioMicroscopeAdmin.Frontend.Application.Dtos.Images
 @using UCR.EB.BioMicroscopeAdmin.Frontend.Presentation.Components.Dialogs
+@using UCR.EB.BioMicroscopeAdmin.Frontend.Presentation.Components
 @using UCR.EB.BioMicroscopeAdmin.Frontend.Presentation.Layout
+@using UCR.EB.BioMicroscopeAdmin.Frontend.Presentation.Security
+@attribute [Authorize]
