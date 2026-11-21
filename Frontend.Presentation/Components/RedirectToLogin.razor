@@ -1,8 +1,19 @@
 @inject NavigationManager Nav
 
 @code {
-    protected override void OnInitialized()
+    [CascadingParameter] private Task<AuthenticationState>? AuthenticationState { get; set; }
+
+    protected override async Task OnInitializedAsync()
     {
+        var user = AuthenticationState is null ? null : (await AuthenticationState).User;
+
+        // Con sesión pero sin el rol necesario: volver al login crearía un ciclo de redirecciones.
+        if (user?.Identity?.IsAuthenticated == true)
+        {
+            Nav.NavigateTo("/", replace: true);
+            return;
+        }
+
         var returnUrl = "/" + Nav.ToBaseRelativePath(Nav.Uri);
         Nav.NavigateTo($"/login?returnUrl={Uri.EscapeDataString(returnUrl)}", replace: true);
     }

@@ -1,6 +1,9 @@
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 using Testcontainers.PostgreSql;
 using UCR.EB.BioMicroscopeAdmin.Backend.Presentation.Security;
 
@@ -37,6 +40,8 @@ public sealed class ApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         builder.UseSetting("Auth:AdminPassword", TestPassword);
         builder.UseSetting("Auth:ReaderEmail", ReaderEmail);
         builder.UseSetting("Auth:ReaderPassword", TestPassword);
+        builder.ConfigureTestServices(services => services.Configure<SecurityStampValidatorOptions>(
+            options => options.ValidationInterval = TimeSpan.Zero));
     }
 
     public HttpClient CreateAnonymousClient()

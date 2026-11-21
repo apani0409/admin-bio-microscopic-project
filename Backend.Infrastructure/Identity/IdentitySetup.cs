@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
@@ -44,19 +43,19 @@ public static class IdentitySetup
             options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
             options.ExpireTimeSpan = TimeSpan.FromHours(8);
             options.SlidingExpiration = true;
-            options.Events = new CookieAuthenticationEvents
+
+            // Se asignan por separado: reemplazar Events borraría el validador del sello
+            // de seguridad que cierra las sesiones de usuarios desactivados.
+            // Un API responde con códigos de estado en lugar de redirigir a una página.
+            options.Events.OnRedirectToLogin = context =>
             {
-                // Un API responde con códigos de estado en lugar de redirigir a una página.
-                OnRedirectToLogin = context =>
-                {
-                    context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                    return Task.CompletedTask;
-                },
-                OnRedirectToAccessDenied = context =>
-                {
-                    context.Response.StatusCode = StatusCodes.Status403Forbidden;
-                    return Task.CompletedTask;
-                }
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                return Task.CompletedTask;
+            };
+            options.Events.OnRedirectToAccessDenied = context =>
+            {
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                return Task.CompletedTask;
             };
         });
 

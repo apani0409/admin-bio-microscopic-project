@@ -1,0 +1,101 @@
+@page "/users"
+@attribute [Authorize(Roles = AppRoles.Administrator)]
+@inject IUserService Users
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<PageTitle>Usuarios</PageTitle>
+
+<MudTable Items="_users" Loading="_loading" Hover="true" Bordered="true" Striped="true">
+    <ToolBarContent>
+        <MudText Typo="Typo.h5">Usuarios</MudText>
+        <MudSpacer />
+        <MudButton Variant="Variant.Filled" Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.PersonAdd" OnClick="OpenCreate">
+            Nuevo Lector
+        </MudButton>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>Correo</MudTh>
+        <MudTh>Rol</MudTh>
+        <MudTh>Estado</MudTh>
+        <MudTh Style="text-align:right">Acciones</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Correo">@context.Email</MudTd>
+        <MudTd DataLabel="Rol">@string.Join(", ", context.Roles)</MudTd>
+        <MudTd DataLabel="Estado">
+            <MudChip T="string" Size="Size.Small" Color="@(context.IsActive ? Color.Success : Color.Default)">
+                @(context.IsActive ? "Activo" : "Desactivado")
+            </MudChip>
+        </MudTd>
+        <MudTd Style="text-align:right">
+            @if (context.Roles.Contains(AppRoles.Reader))
+            {
+                <MudButton Size="Size.Small" Disabled="_busy"
+                           Color="@(context.IsActive ? Color.Error : Color.Primary)"
+                           OnClick="@(() => ToggleAsync(context))">
+                    @(context.IsActive ? "Desactivar" : "Reactivar")
+                </MudButton>
+            }
+        </MudTd>
+    </RowTemplate>
+    <NoRecordsContent>
+        <MudText>No hay usuarios registrados.</MudText>
+    </NoRecordsContent>
+</MudTable>
+
+@code {
+    private List<UserDto> _users = [];
+    private bool _loading = true;
+    private bool _busy;
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        try { _users = await Users.ListAsync(); }
+        catch (HttpRequestException) { Snackbar.Add("No se pudieron cargar los usuarios.", Severity.Error); }
+        finally { _loading = false; }
+    }
+
+    private async Task OpenCreate()
+    {
+        var dialog = await DialogService.ShowAsync<UserFormDialog>("Nuevo Lector");
+        var result = await dialog.Result;
+        if (result is not null && !result.Canceled)
+        {
+            Snackbar.Add("Usuario creado.", Severity.Success);
+            await LoadAsync();
+        }
+    }
+
+    private async Task ToggleAsync(UserDto user)
+    {
+        _busy = true;
+        try
+        {
+            if (user.IsActive)
+            {
+                await Users.DeactivateAsync(user.Id);
+                Snackbar.Add("Usuario desactivado. Su sesión se cerrará en un minuto como máximo.", Severity.Success);
+            }
+            else
+            {
+                await Users.ReactivateAsync(user.Id);
+                Snackbar.Add("Usuario reactivado.", Severity.Success);
+            }
+
+            await LoadAsync();
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or HttpRequestException)
+        {
+            Snackbar.Add("No se pudo actualizar el usuario.", Severity.Error);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}
