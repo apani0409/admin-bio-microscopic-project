@@ -1,7 +1,7 @@
 services:
   db:
     image: postgres:17
-    container_name: biomicroscope_db_electron
+    container_name: biomicroscope_db
     environment:
       POSTGRES_DB: biomicroscope_admin
       POSTGRES_USER: postgres
